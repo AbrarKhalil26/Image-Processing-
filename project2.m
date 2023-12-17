@@ -107,8 +107,9 @@ elseif handles.popupmenu1.Value == 4
     %------------------------------------------------------
 % Laplacian of Gaussian *
 elseif handles.popupmenu1.Value == 5
-   result = applyLaplacianOfGaussian(grayImage, [5, 5], 0.5);
+   logImage = edge(grayImage, 'log');
    text = 'Laplacian of Gaussian';
+   result = logImage;
     %------------------------------------------------------
 % Histogram Equialization
 elseif handles.popupmenu1.Value == 6
@@ -167,18 +168,6 @@ function result = addSaltAndPepperNoise(image, density)
     image(pepperPositions) = 0; % Set pepper noise to black (0)
     
     result = uint8(image);
-    
-function result = applyLaplacianOfGaussian(image, filterSize, sigma)
-    % Create Laplacian of Gaussian (LoG) filter
-    logFilter = fspecial('log', filterSize, sigma);
-    
-    % Apply LoG filter to the image
-    edges = imfilter(double(image), logFilter, 'symmetric', 'conv');
-    
-    % Normalize the result to the range [0, 255]
-    normalizedEdges = uint8((edges - min(edges(:))) * (255 / (max(edges(:)) - min(edges(:)))));
-    
-    result = normalizedEdges;
     
 function result = manualHistogramEqualization(grayImage)
     [counts, ~] = imhist(grayImage);
