@@ -99,17 +99,16 @@ elseif handles.popupmenu1.Value == 3
     result = addSaltAndPepperNoise(noisyImage, 0.02);
     text = 'Noisy Image';
     %------------------------------------------------------
-% Denoised Image Using Median Filter *
+% Denoised Image Using Median Filter 
 elseif handles.popupmenu1.Value == 4
     denoisedImage = medfilt2(noisyImage, [3, 3]);
     text = 'Denoised Image';
     result = denoisedImage;
     %------------------------------------------------------
-% Laplacian of Gaussian *
+% Laplacian of Gaussian 
 elseif handles.popupmenu1.Value == 5
-   logImage = edge(grayImage, 'log');
-   text = 'Laplacian of Gaussian';
-   result = logImage;
+    result = manualLaplacianOfGaussian(grayImage);
+    text = 'Laplacian of Gaussian';
     %------------------------------------------------------
 % Histogram Equialization
 elseif handles.popupmenu1.Value == 6
@@ -167,7 +166,26 @@ function result = addSaltAndPepperNoise(image, density)
     pepperPositions = rand(size(image)) < noiseDensity / 2;
     image(pepperPositions) = 0; % Set pepper noise to black (0)
     
-    result = uint8(image);
+    result = uint8(image); 
+
+function result = manualLaplacianOfGaussian(image)
+    % Gaussian smoothing
+    hsize = 5;
+    sigma = 1.4;
+    gaussianFilter = fspecial('gaussian', hsize, sigma);
+    smoothedImage = imfilter(double(image), gaussianFilter);
+
+    % Laplacian of Gaussian filter
+    logFilter = fspecial('log', hsize, sigma);
+    
+    % Apply the Laplacian of Gaussian filter
+    edges = conv2(smoothedImage, logFilter, 'same');
+
+     % Adjust threshold to get binary edge map
+    threshold = 0.5; % You may need to adjust this threshold
+    binaryEdges = edges > threshold;
+
+    result = uint8(binaryEdges * 255);
     
 function result = manualHistogramEqualization(grayImage)
     [counts, ~] = imhist(grayImage);
@@ -219,7 +237,7 @@ function result = manualCannyEdgeDetection(grayImage)
 
     % Edge tracking by hysteresis
     highThreshold = 0.2 * max(edgeImage(:));
-    lowThreshold = 0.1 * max(edgeImage(:));
+    lowThreshold = 0.01 * max(edgeImage(:));
 
     strongEdges = edgeImage > highThreshold;
     weakEdges = (edgeImage >= lowThreshold) & (edgeImage <= highThreshold);
